@@ -118,6 +118,8 @@ async function fetchFromGame(endpoint, body = {}) {
     "Content-Type": "application/json;charset=UTF-8",
     "locale": "vi",
     "platform": "web",
+    "Origin": "https://7c8z.123vtv9.me",
+    "Referer": "https://7c8z.123vtv9.me/home/game.html?gameId=276",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
   };
 
@@ -139,6 +141,32 @@ async function fetchFromGame(endpoint, body = {}) {
     return null;
   }
 }
+
+// Điểm cuối nhận đồng bộ dữ liệu đẩy từ Trình duyệt (dành cho trường hợp IP Cloud bị chặn)
+app.post('/api/push', (req, res) => {
+  const { history, omitData } = req.body;
+  let updated = false;
+
+  if (history && history.length > 0) {
+    lotteryHistory = history;
+    updated = true;
+    console.log(`[PUSH SYNC] Nhận được ${history.length} kỳ lịch sử từ trình duyệt.`);
+  }
+
+  if (omitData && Object.keys(omitData).length > 0) {
+    savedL2Data = omitData;
+    updated = true;
+    console.log(`[PUSH SYNC] Nhận được dữ liệu lô gan từ trình duyệt.`);
+  }
+
+  if (updated) {
+    calculatePredictions();
+    res.json({ success: true, msg: "Đồng bộ thành công!" });
+  } else {
+    res.json({ success: false, msg: "Không có dữ liệu hợp lệ" });
+  }
+});
+
 
 // Cập nhật Lô Gan (Omit) mỗi 5 phút
 async function updateOmitData() {
