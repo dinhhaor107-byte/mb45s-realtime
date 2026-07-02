@@ -144,26 +144,31 @@ async function fetchFromGame(endpoint, body = {}) {
 
 // Điểm cuối nhận đồng bộ dữ liệu đẩy từ Trình duyệt (dành cho trường hợp IP Cloud bị chặn)
 app.post('/api/push', (req, res) => {
-  const { history, omitData } = req.body;
-  let updated = false;
+  try {
+    const { history, omitData } = req.body;
+    let updated = false;
 
-  if (history && history.length > 0) {
-    lotteryHistory = history;
-    updated = true;
-    console.log(`[PUSH SYNC] Nhận được ${history.length} kỳ lịch sử từ trình duyệt.`);
-  }
+    if (history && Array.isArray(history) && history.length > 0) {
+      lotteryHistory = history;
+      updated = true;
+      console.log(`[PUSH SYNC] Nhận được ${history.length} kỳ lịch sử từ trình duyệt.`);
+    }
 
-  if (omitData && Object.keys(omitData).length > 0) {
-    savedL2Data = omitData;
-    updated = true;
-    console.log(`[PUSH SYNC] Nhận được dữ liệu lô gan từ trình duyệt.`);
-  }
+    if (omitData && typeof omitData === 'object' && !Array.isArray(omitData) && Object.keys(omitData).length > 0) {
+      savedL2Data = omitData;
+      updated = true;
+      console.log(`[PUSH SYNC] Nhận được dữ liệu lô gan từ trình duyệt.`);
+    }
 
-  if (updated) {
-    calculatePredictions();
-    res.json({ success: true, msg: "Đồng bộ thành công!" });
-  } else {
-    res.json({ success: false, msg: "Không có dữ liệu hợp lệ" });
+    if (updated) {
+      calculatePredictions();
+      res.json({ success: true, msg: "Đồng bộ thành công!" });
+    } else {
+      res.json({ success: false, msg: "Không có dữ liệu hợp lệ" });
+    }
+  } catch (err) {
+    console.error("[PUSH ERROR] Lỗi khi xử lý dữ liệu đẩy lên:", err.message);
+    res.status(500).json({ success: false, msg: "Lỗi hệ thống khi đồng bộ" });
   }
 });
 
