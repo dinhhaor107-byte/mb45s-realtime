@@ -68,8 +68,8 @@ function calculatePredictions() {
   const scoredNumbers = allNumbers.map(num => {
     let score = 100;
 
-    // 1. Điểm tần suất (50 kỳ gần nhất)
-    const frequency = deList.filter(item => `${item.chuc}${item.donvi}` === num).length;
+    // 1. Điểm tần suất (Chỉ xét 50 kỳ gần nhất)
+    const frequency = deList.slice(0, 50).filter(item => `${item.chuc}${item.donvi}` === num).length;
     score += frequency * 12;
 
     // 2. Điểm phạt lặp ngắn hạn (Đề vừa về)
@@ -107,7 +107,7 @@ function calculatePredictions() {
     latestOpenCode: lotteryHistory[0].openNum || lotteryHistory[0].openCode || lotteryHistory[0].result || 'Đang quay...'
   };
   
-  console.log(`[ALGORITHM] Đã cập nhật lại dự đoán lúc ${predictionData.lastUpdate}. Kỳ mới nhất: ${predictionData.latestIssue} -> ${predictionData.latestOpenCode}`);
+  console.log(`[ALGORITHM] Cập nhật dự đoán thành công. Tổng lịch sử tích lũy: ${lotteryHistory.length} kỳ. Kỳ mới nhất: ${predictionData.latestIssue}`);
 }
 
 // Gửi yêu cầu API đến nhà cái
@@ -149,9 +149,33 @@ app.post('/api/push', (req, res) => {
     let updated = false;
 
     if (history && Array.isArray(history) && history.length > 0) {
-      lotteryHistory = history;
+      // Hợp nhất và loại bỏ trùng lặp kỳ quay dựa trên turnNum/issue
+      const existingMap = new Map();
+      
+      // Đưa lịch sử hiện tại trên server vào Map
+      lotteryHistory.forEach(item => {
+        const key = item.issue || item.turnNum || item.period;
+        if (key) existingMap.set(String(key), item);
+      });
+
+      // Trộn thêm lịch sử mới đẩy lên từ trình duyệt vào Map
+      history.forEach(item => {
+        const key = item.issue || item.turnNum || item.period;
+        if (key) existingMap.set(String(key), item);
+      });
+
+      // Chuyển Map ngược lại thành mảng và sắp xếp giảm dần theo mã kỳ quay
+      const mergedList = Array.from(existingMap.values());
+      mergedList.sort((a, b) => {
+        const keyA = String(a.issue || a.turnNum || a.period);
+        const keyB = String(b.issue || b.turnNum || b.period);
+        return keyB.localeCompare(keyA, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      // Lưu trữ tối đa 2000 kỳ quay để tối ưu hóa bộ nhớ RAM
+      lotteryHistory = mergedList.slice(0, 2000);
       updated = true;
-      console.log(`[PUSH SYNC] Nhận được ${history.length} kỳ lịch sử từ trình duyệt.`);
+      console.log(`[PUSH SYNC] Đã hợp nhất lịch sử. Tổng số kỳ lưu trữ trên Cloud: ${lotteryHistory.length}`);
     }
 
     if (omitData && typeof omitData === 'object' && !Array.isArray(omitData) && Object.keys(omitData).length > 0) {
@@ -162,7 +186,7 @@ app.post('/api/push', (req, res) => {
 
     if (updated) {
       calculatePredictions();
-      res.json({ success: true, msg: "Đồng bộ thành công!" });
+      res.json({ success: true, msg: "Đồng bộ thành công!", totalStored: lotteryHistory.length });
     } else {
       res.json({ success: false, msg: "Không có dữ liệu hợp lệ" });
     }
