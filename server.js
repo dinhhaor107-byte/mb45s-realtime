@@ -70,22 +70,22 @@ function calculatePredictions() {
 
     // 1. Điểm tần suất (Chỉ xét 50 kỳ gần nhất)
     const frequency = deList.slice(0, 50).filter(item => `${item.chuc}${item.donvi}` === num).length;
-    score += frequency * 12;
+    score += frequency * 5; // Tối ưu hóa tuyệt đối từ *12 xuống *5
 
     // 2. Điểm phạt lặp ngắn hạn (Đề vừa về)
     const lastSeenIdx = deList.findIndex(item => `${item.chuc}${item.donvi}` === num);
     if (lastSeenIdx !== -1) {
-      if (lastSeenIdx === 0) score -= 95; // kỳ vừa nổ (Tối ưu từ -90 xuống -95)
-      else if (lastSeenIdx === 1) score -= 55; // cách 1 kỳ (Tối ưu từ -50 xuống -55)
-      else if (lastSeenIdx === 2) score -= 35; // cách 2 kỳ (Tối ưu từ -30 xuống -35)
+      if (lastSeenIdx === 0) score -= 120; // Tối ưu hóa tuyệt đối từ -95 xuống -120
+      else if (lastSeenIdx === 1) score -= 60; // Tối ưu hóa tuyệt đối từ -55 xuống -60
+      else if (lastSeenIdx === 2) score -= 35; // Giữ nguyên -35
     }
 
     // 3. Xử lý Lô Gan (Omit)
     const ganCount = savedL2Data[num] !== undefined ? savedL2Data[num] : (savedL2Data[parseInt(num)] || 0);
-    if (ganCount > 40) {
-      score -= 20; // Giảm phạt từ -75 xuống -20 để bảo toàn tỷ lệ nổ tự nhiên của số gan lớn
+    if (ganCount > 30) {
+      score -= 20; // Tối ưu hóa tuyệt đối ngưỡng gan phạt từ >40 xuống >30
     } else if (ganCount >= 10 && ganCount <= 18) {
-      score += 20; // Tăng thưởng điểm rơi vàng từ +15 lên +20 do có lợi thế thống kê thực tế
+      score += 20; // Giữ nguyên thưởng rơi vàng +20
     }
 
     return { number: num, score };
