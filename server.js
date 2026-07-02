@@ -256,12 +256,38 @@ app.get('/api/data', (req, res) => {
   });
 });
 
-// Điểm cuối xem chi tiết toàn bộ lịch sử kỳ quay tích lũy
+// Điểm cuối xem chi tiết toàn bộ lịch sử kỳ quay tích lũy (Rút gọn tinh sạch)
 app.get('/api/history', (req, res) => {
+  const formattedHistory = lotteryHistory.map(row => {
+    const issue = row.issue || row.turnNum || row.period || 'Chưa rõ';
+    let openNum = row.openNum || row.openCode || row.result || row.code || '';
+    if (!openNum && row.detail) {
+      try {
+        const detailArr = typeof row.detail === 'string' ? JSON.parse(row.detail) : row.detail;
+        openNum = detailArr[0].split(",")[0];
+      } catch(e) {}
+    }
+    
+    // Trích xuất 2 số cuối đề
+    let de = '--';
+    if (openNum) {
+      const cleanStr = String(openNum).replace(/,/g, '').trim();
+      if (cleanStr.length >= 2) {
+        de = cleanStr.slice(-2);
+      }
+    }
+    
+    return {
+      issue: issue,
+      result: openNum,
+      de: de
+    };
+  });
+
   res.json({
     success: true,
-    total: lotteryHistory.length,
-    history: lotteryHistory
+    total: formattedHistory.length,
+    history: formattedHistory
   });
 });
 
