@@ -75,17 +75,17 @@ function calculatePredictions() {
     // 2. Điểm phạt lặp ngắn hạn (Đề vừa về)
     const lastSeenIdx = deList.findIndex(item => `${item.chuc}${item.donvi}` === num);
     if (lastSeenIdx !== -1) {
-      if (lastSeenIdx === 0) score -= 90; // kỳ vừa nổ
-      else if (lastSeenIdx === 1) score -= 50; // cách 1 kỳ
-      else if (lastSeenIdx === 2) score -= 30; // cách 2 kỳ
+      if (lastSeenIdx === 0) score -= 95; // kỳ vừa nổ (Tối ưu từ -90 xuống -95)
+      else if (lastSeenIdx === 1) score -= 55; // cách 1 kỳ (Tối ưu từ -50 xuống -55)
+      else if (lastSeenIdx === 2) score -= 35; // cách 2 kỳ (Tối ưu từ -30 xuống -35)
     }
 
     // 3. Xử lý Lô Gan (Omit)
     const ganCount = savedL2Data[num] !== undefined ? savedL2Data[num] : (savedL2Data[parseInt(num)] || 0);
-    if (ganCount > 20) {
-      score -= 75; // Phạt số gan cực đại (khan chết)
+    if (ganCount > 40) {
+      score -= 20; // Giảm phạt từ -75 xuống -20 để bảo toàn tỷ lệ nổ tự nhiên của số gan lớn
     } else if (ganCount >= 10 && ganCount <= 18) {
-      score += 15; // Điểm rơi lý tưởng, dễ nổ
+      score += 20; // Tăng thưởng điểm rơi vàng từ +15 lên +20 do có lợi thế thống kê thực tế
     }
 
     return { number: num, score };
