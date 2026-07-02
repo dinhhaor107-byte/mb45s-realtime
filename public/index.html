@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Realtime Lottery Dashboard - MB45s</title>
+    <!-- Nhúng Google Font Outfit sang trọng -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+        /* Các vòng tròn mờ ảo nền phía sau tạo cảm giác chiều sâu */
+        .circle-bg {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            opacity: 0.5;
+        }
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: #7c3aed;
+            top: 10%;
+            left: 15%;
+            animation: float 8s ease-in-out infinite alternate;
+        }
+        .circle-2 {
+            width: 350px;
+            height: 350px;
+            background: #db2777;
+            bottom: 10%;
+            right: 15%;
+            animation: float 10s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-30px) scale(1.1); }
+        }
+
+        /* Container kính cường lực (Glassmorphic) */
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Tiêu đề chính */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            font-size: 13px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            display: inline-block;
+        }
+
+        /* Card kết quả kỳ quay gần nhất */
+        .card-result {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .result-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .result-balls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .ball {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .ball:last-child {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
+            color: #0f172a;
+        }
+        .result-meta {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .result-meta strong {
+            color: #f472b6;
+        }
+
+        /* Các khối dàn số */
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #a78bfa;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            border-left: 3px solid #db2777;
+            padding-left: 8px;
+        }
+        .copy-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .textarea-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #fbbf24;
+            font-weight: 600;
+            font-family: monospace;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            word-break: break-all;
+            height: 80px;
+        }
+        .textarea-box.de10 {
+            height: 50px;
+            color: #38bdf8;
+            font-size: 15px;
+        }
+        .btn-copy {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-copy:hover {
+            background: #6d28d9;
+            transform: translateY(-1px);
+        }
+        .btn-copy:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 10px;
+        }
+
+        /* Toast thông báo sao chép */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="circle-bg circle-1"></div>
+    <div class="circle-bg circle-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>DÀN CƯỢC REALTIME MB45s</h1>
+            <p><span class="status-dot"></span> Tự động cập nhật 24/7</p>
+        </div>
+
+        <!-- Khối Kết Quả Mới Nhất -->
+        <div class="card-result">
+            <div class="result-title" id="issue-header">ĐANG TẢI KỲ QUAY...</div>
+            <div class="result-balls" id="result-container">
+                <div class="ball">-</div>
+                <div class="ball">-</div>
+                <div class="ball">-</div>
+                <div class="ball">-</div>
+                <div class="ball">-</div>
+            </div>
+            <div class="result-meta" id="de-meta">
+                Hai số cuối GĐB: <strong>--</strong> (Chục: -- | Đơn Vị: --)
+            </div>
+        </div>
+
+        <!-- Khối Dàn Đề 70 Số -->
+        <div class="section-title">Dàn Đề VIP (70 Số)</div>
+        <div class="copy-group">
+            <textarea id="de70-text" class="textarea-box" readonly>Đang phân tính xác suất...</textarea>
+            <button onclick="copyToClipboard('de70-text')" class="btn-copy">Copy</button>
+        </div>
+
+        <!-- Khối Dàn Đề 10 Số -->
+        <div class="section-title">Dàn Đề Rút Gọn (10 Số)</div>
+        <div class="copy-group">
+            <textarea id="de10-text" class="textarea-box de10" readonly>Đang quét nhịp cầu...</textarea>
+            <button onclick="copyToClipboard('de10-text')" class="btn-copy" style="background: #db2777;">Copy</button>
+        </div>
+
+        <div class="footer">
+            Cập nhật cuối: <span id="last-update">--:--:--</span> • Thuật toán 4 Chỉ số Vàng
+        </div>
+    </div>
+
+    <!-- Toast thông báo -->
+    <div id="copy-toast" class="toast">📋 Đã sao chép thành công dàn số cược!</div>
+
+    <script>
+        // Hàm sao chép vào clipboard và hiện Toast
+        function copyToClipboard(id) {
+            const textarea = document.getElementById(id);
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // Dành cho điện thoại di động
+            navigator.clipboard.writeText(textarea.value);
+
+            const toast = document.getElementById('copy-toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1800);
+        }
+
+        // Tải dữ liệu từ máy chủ Express
+        async function fetchRealtimeData() {
+            try {
+                const res = await fetch('/api/data');
+                const json = await res.json();
+                
+                if (json.success && json.data) {
+                    const data = json.data;
+
+                    // 1. Cập nhật kỳ quay và bóng số
+                    document.getElementById('issue-header').innerText = `Kỳ quay: ${data.latestIssue}`;
+                    
+                    const ballsContainer = document.getElementById('result-container');
+                    const numbers = data.latestOpenCode.split(',');
+                    
+                    if (numbers.length >= 5) {
+                        ballsContainer.innerHTML = '';
+                        numbers.forEach(num => {
+                            const ball = document.createElement('div');
+                            ball.className = 'ball';
+                            ball.innerText = num;
+                            ballsContainer.appendChild(ball);
+                        });
+
+                        // 2. Cập nhật Đề và phân tích chục/đơn vị
+                        const deStr = numbers.slice(-2).join('');
+                        const chuc = deStr[0];
+                        const dv = deStr[1];
+                        document.getElementById('de-meta').innerHTML = `
+                            Hai số cuối GĐB: <strong>${deStr}</strong> (Hàng Chục: ${chuc >= 5 ? 'Tài' : 'Xỉu'} | Đơn Vị: ${dv >= 5 ? 'Tài' : 'Xỉu'})
+                        `;
+                    }
+
+                    // 3. Cập nhật các ô văn bản chứa dàn cược
+                    if (data.de70 && data.de70.length > 0) {
+                        document.getElementById('de70-text').value = data.de70.join(',');
+                    }
+                    if (data.de10 && data.de10.length > 0) {
+                        document.getElementById('de10-text').value = data.de10.join(',');
+                    }
+
+                    // 4. Cập nhật thời gian đồng bộ cuối
+                    document.getElementById('last-update').innerText = data.lastUpdate;
+                }
+            } catch(e) {
+                console.error("Lỗi đồng bộ dữ liệu Realtime:", e.message);
+            }
+        }
+
+        // Tự động tải lại mỗi 5 giây
+        fetchRealtimeData();
+        setInterval(fetchRealtimeData, 5000);
+    </script>
+</body>
+</html>
