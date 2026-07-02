@@ -256,6 +256,15 @@ app.get('/api/data', (req, res) => {
   });
 });
 
+// Điểm cuối xem chi tiết toàn bộ lịch sử kỳ quay tích lũy
+app.get('/api/history', (req, res) => {
+  res.json({
+    success: true,
+    total: lotteryHistory.length,
+    history: lotteryHistory
+  });
+});
+
 // Trả về trang chủ Dashboard
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
