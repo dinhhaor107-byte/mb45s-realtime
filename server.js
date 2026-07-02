@@ -9,7 +9,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Cổng chạy ứng dụng (Railway tự cấp phát hoặc mặc định 3000)
 const PORT = process.env.PORT || 3000;
-const SESSION_TOKEN = process.env.SESSION_TOKEN || '';
+const SESSION_TOKEN = process.env.SESSION_TOKEN || 'CjU0MTv+xXixlZuI2ZFk6EhOWjg1fR78LR46e7ZpO0YsbQS8Tyd1FmS8t1Y=';
 
 // Biến lưu trữ dữ liệu thời gian thực trong bộ nhớ
 let lotteryHistory = [];
