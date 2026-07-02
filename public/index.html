@@ -260,15 +260,22 @@
             </div>
         </div>
 
+        <!-- Khối Dàn Đề 95 Số -->
+        <div class="section-title" style="border-left-color: #10b981; color: #10b981;">Dàn Đề An Toàn VIP (95 Số) - Chuỗi thua max = 1 kỳ</div>
+        <div class="copy-group">
+            <textarea id="de95-text" class="textarea-box" style="height: 95px; color: #10b981;" readonly>Đang phân tích 5 số loại bỏ...</textarea>
+            <button onclick="copyToClipboard('de95-text')" class="btn-copy" style="background: #10b981;">Copy</button>
+        </div>
+
         <!-- Khối Dàn Đề 70 Số -->
-        <div class="section-title">Dàn Đề VIP (70 Số)</div>
+        <div class="section-title">Dàn Đề Cân Bằng (70 Số)</div>
         <div class="copy-group">
             <textarea id="de70-text" class="textarea-box" readonly>Đang phân tính xác suất...</textarea>
             <button onclick="copyToClipboard('de70-text')" class="btn-copy">Copy</button>
         </div>
 
         <!-- Khối Dàn Đề 10 Số -->
-        <div class="section-title">Dàn Đề Rút Gọn (10 Số)</div>
+        <div class="section-title" style="border-left-color: #38bdf8;">Dàn Đề Rút Gọn (10 Số)</div>
         <div class="copy-group">
             <textarea id="de10-text" class="textarea-box de10" readonly>Đang quét nhịp cầu...</textarea>
             <button onclick="copyToClipboard('de10-text')" class="btn-copy" style="background: #db2777;">Copy</button>
@@ -331,6 +338,9 @@
                     }
 
                     // 3. Cập nhật các ô văn bản chứa dàn cược
+                    if (data.de95 && data.de95.length > 0) {
+                        document.getElementById('de95-text').value = data.de95.join(',');
+                    }
                     if (data.de70 && data.de70.length > 0) {
                         document.getElementById('de70-text').value = data.de70.join(',');
                     }
